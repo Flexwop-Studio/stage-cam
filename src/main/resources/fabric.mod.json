@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "cameramod",
+  "version": "1.0.0",
+  "name": "CameraMod",
+  "description": "Place camera points and switch between them with numpad keys",
+  "authors": ["You"],
+  "contact": {},
+  "license": "MIT",
+  "environment": "*",
+  "accessWidener": "cameramod.accesswidener",
+  "entrypoints": {
+    "main": ["net.cameramod.cameramod.CameraMod"],
+    "client": ["net.cameramod.cameramod.CameraModClient"]
+  },
+"mixins": ["cameramod.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "fabric-api": "*",
+    "minecraft": "~1.21"
+  }
+}
