@@ -25,7 +25,7 @@ public class MixinGameRenderer {
     private void beforeRender(RenderTickCounter tickCounter, boolean tick, CallbackInfo ci) {
         if (client.options == null) return;
 
-        // Stop camera pass when any screen is open EXCEPT chat
+        // Stop the camera feed when any screen is open EXCEPT the chat screen
         boolean screenOpen = client.currentScreen != null
             && !(client.currentScreen instanceof ChatScreen);
 

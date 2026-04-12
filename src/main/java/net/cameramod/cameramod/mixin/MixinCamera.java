@@ -21,7 +21,7 @@ public class MixinCamera {
     private void onCameraUpdate(BlockView area, Entity focusedEntity,
                                 boolean thirdPerson, boolean inverseView,
                                 float tickDelta, CallbackInfo ci) {
-        // Kameraposition NUR überschreiben wenn wir im Kamera-Pass sind
+        // Cameraposition only overwrite when were in Camera pass
         if (!CameraModClient.renderingCameraPass) return;
         if (!CameraModClient.isCameraActive()) return;
 

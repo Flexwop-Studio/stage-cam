@@ -18,7 +18,7 @@ public class CameraMarkerRenderer {
     }
 
     private static void render(WorldRenderContext context) {
-        // Nicht im Kamera-Pass rendern, nur im Hauptfenster
+        // Do not render in the camera viewport, only in the main window
         if (CameraModClient.renderingCameraPass) return;
 
         MinecraftClient client = MinecraftClient.getInstance();
@@ -42,7 +42,7 @@ public class CameraMarkerRenderer {
         );
 
         RenderSystem.lineWidth(2.0f);
-        RenderSystem.disableDepthTest(); // Durch Wände sichtbar
+        RenderSystem.disableDepthTest(); // Visible through walls
         RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
 
         Matrix4f matrix = matrices.peek().getPositionMatrix();
@@ -55,19 +55,19 @@ public class CameraMarkerRenderer {
             float z = (float) cam.z();
             float size = 0.3f;
 
-            // Farbe je nach Slot (1=rot, 2=grün, 3=blau, etc.)
+            // Color based on slot (1=red, 2=green, 3=blue, etc.)
             float r = slot % 3 == 1 ? 1f : 0.2f;
             float g = slot % 3 == 2 ? 1f : 0.2f;
             float b = slot % 3 == 0 ? 1f : 0.2f;
 
-            // Kreuz in X-Richtung
+            // Cross in the X-direction
             drawLine(buffer, matrix, x - size, y, z, x + size, y, z, r, g, b);
-            // Kreuz in Y-Richtung
+            // Cross in the Y-direction
             drawLine(buffer, matrix, x, y - size, z, x, y + size, z, r, g, b);
-            // Kreuz in Z-Richtung
+            // Cross in the Z-direction
             drawLine(buffer, matrix, x, y, z - size, x, y, z + size, r, g, b);
 
-            // Kleines Label mit Slot-Nummer (als Linie-Box)
+            // Small label with slot number (as a line box)
             drawBox(buffer, matrix, x, y, z, size * 0.5f, r, g, b);
         }
 
@@ -92,17 +92,17 @@ public class CameraMarkerRenderer {
     private static void drawBox(BufferBuilder buffer, Matrix4f matrix,
                                  float x, float y, float z, float s,
                                  float r, float g, float b) {
-        // Unteres Quadrat
+        // Bottom square
         drawLine(buffer, matrix, x-s, y-s, z-s, x+s, y-s, z-s, r, g, b);
         drawLine(buffer, matrix, x+s, y-s, z-s, x+s, y-s, z+s, r, g, b);
         drawLine(buffer, matrix, x+s, y-s, z+s, x-s, y-s, z+s, r, g, b);
         drawLine(buffer, matrix, x-s, y-s, z+s, x-s, y-s, z-s, r, g, b);
-        // Oberes Quadrat
+        // Top square
         drawLine(buffer, matrix, x-s, y+s, z-s, x+s, y+s, z-s, r, g, b);
         drawLine(buffer, matrix, x+s, y+s, z-s, x+s, y+s, z+s, r, g, b);
         drawLine(buffer, matrix, x+s, y+s, z+s, x-s, y+s, z+s, r, g, b);
         drawLine(buffer, matrix, x-s, y+s, z+s, x-s, y+s, z-s, r, g, b);
-        // Vertikale Linien
+        // Vertical lines
         drawLine(buffer, matrix, x-s, y-s, z-s, x-s, y+s, z-s, r, g, b);
         drawLine(buffer, matrix, x+s, y-s, z-s, x+s, y+s, z-s, r, g, b);
         drawLine(buffer, matrix, x+s, y-s, z+s, x+s, y+s, z+s, r, g, b);

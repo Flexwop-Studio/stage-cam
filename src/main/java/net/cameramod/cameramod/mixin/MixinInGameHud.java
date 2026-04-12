@@ -14,7 +14,7 @@ public class MixinInGameHud {
 
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
     private void onRender(DrawContext context, RenderTickCounter counter, CallbackInfo ci) {
-        // HUD im Kamera-Pass immer ausblenden
+        // Always hide the HUD in camera mode
         if (CameraModClient.renderingCameraPass) {
             ci.cancel();
         }

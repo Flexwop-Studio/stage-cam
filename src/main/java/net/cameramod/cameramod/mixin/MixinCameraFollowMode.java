@@ -36,16 +36,16 @@ public class MixinCameraFollowMode {
 
             wackleTime += tickDelta * 0.06f;
 
-            // Blickrichtung des Spielers als 3D-Vektor berechnen (yaw + pitch)
+            // Calculate the player's line of sight as a 3D vector (yaw + pitch)
             double yawRad   = Math.toRadians(yaw);
             double pitchRad = Math.toRadians(pitch);
 
-            // Vorwärtsvektor in Blickrichtung
+            // Forward vector in the direction of view
             double forwardX = -Math.sin(yawRad) * Math.cos(pitchRad);
             double forwardY = -Math.sin(pitchRad);
             double forwardZ =  Math.cos(yawRad) * Math.cos(pitchRad);
 
-            // Zielposition: 2 Blöcke VOR dem Spieler in Blickrichtung
+            // Target position: 2 blocks in front of the player in the direction of view
             double targetX = focusedEntity.getX() + forwardX * 2.0;
             double targetY = eyeY + forwardY * 2.0;
             double targetZ = focusedEntity.getZ() + forwardZ * 2.0;
@@ -63,11 +63,11 @@ public class MixinCameraFollowMode {
             smoothY += (targetY - smoothY) * smoothFactor;
             smoothZ += (targetZ - smoothZ) * smoothFactor;
 
-            // Sehr leichtes Wackeln
+            // Very slight wobble
             float wackleYaw   = (float) Math.sin(wackleTime * 0.9f) * 0.15f;
             float wacklePitch = (float) Math.sin(wackleTime * 1.1f) * 0.1f;
 
-            // Kamera schaut zurück auf den Spieler (entgegengesetzte Richtung)
+            // The camera faces away from the player (opposite direction)
             setPos(smoothX, smoothY, smoothZ);
             setRotation(yaw + 180f + wackleYaw, -pitch + wacklePitch);
         } else {
