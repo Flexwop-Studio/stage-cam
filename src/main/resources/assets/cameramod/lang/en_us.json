@@ -1,5 +1,5 @@
 {
-  "key.cameramod.cam0": "Camera: Off",
+  "key.cameramod.cam0": "Turn Off Camera",
   "key.cameramod.cam1": "Camera 1",
   "key.cameramod.cam2": "Camera 2",
   "key.cameramod.cam3": "Camera 3",
@@ -9,6 +9,11 @@
   "key.cameramod.cam7": "Camera 7",
   "key.cameramod.cam8": "Camera 8",
   "key.cameramod.cam9": "Camera 9",
-  "key.cameramod.handcam": "Toggle Follow Camera",
+  "key.cameramod.handcam": "Toggle Handheld / Ego",
+  "key.cameramod.follow": "Toggle Follow Mode",
+  "key.cameramod.zoomin": "Zoom In",
+  "key.cameramod.zoomout": "Zoom Out",
+  "key.cameramod.setnext": "Camera Set Next",
+  "key.cameramod.setprev": "Camera Set Previous",
   "category.cameramod": "StageCam"
 }

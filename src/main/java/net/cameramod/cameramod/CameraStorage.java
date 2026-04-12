@@ -4,79 +4,98 @@ import com.google.gson.*;
 import net.fabricmc.loader.api.FabricLoader;
 
 import java.io.*;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 public class CameraStorage {
 
-    private static final Path STORAGE_DIR = FabricLoader.getInstance()
-        .getConfigDir().resolve("cameramod");
-
-    private static Path getFile(UUID playerUuid) {
-        return STORAGE_DIR.resolve(playerUuid + ".json");
+    private static Path getDir() {
+        Path dir = FabricLoader.getInstance().getConfigDir().resolve("cameramod");
+        if (!Files.exists(dir)) {
+            try { Files.createDirectories(dir); } catch (IOException ignored) {}
+        }
+        return dir;
     }
 
-    public static void save(UUID playerUuid, Map<Integer, CameraPoint> cameras) {
-        try {
-            Files.createDirectories(STORAGE_DIR);
+    // File per player per set: <uuid>_set<N>.json
+    private static Path getFile(UUID uuid, int set) {
+        return getDir().resolve(uuid + "_set" + set + ".json");
+    }
 
-            JsonObject root = new JsonObject();
-            JsonArray array = new JsonArray();
+    public static void saveSet(UUID uuid, int set, Map<Integer, CameraPoint> cams) {
+        JsonObject root = new JsonObject();
+        cams.forEach((slot, cam) -> {
+            JsonObject obj = new JsonObject();
+            obj.addProperty("x", cam.x());
+            obj.addProperty("y", cam.y());
+            obj.addProperty("z", cam.z());
+            obj.addProperty("yaw", cam.yaw());
+            obj.addProperty("pitch", cam.pitch());
+            obj.addProperty("name", cam.name() != null ? cam.name() : "");
+            root.add(String.valueOf(slot), obj);
+        });
 
-            for (Map.Entry<Integer, CameraPoint> entry : cameras.entrySet()) {
-                JsonObject cam = new JsonObject();
-                cam.addProperty("slot", entry.getKey());
-                cam.addProperty("x", entry.getValue().x());
-                cam.addProperty("y", entry.getValue().y());
-                cam.addProperty("z", entry.getValue().z());
-                cam.addProperty("yaw", entry.getValue().yaw());
-                cam.addProperty("pitch", entry.getValue().pitch());
-                cam.addProperty("name", entry.getValue().name() != null ? entry.getValue().name() : "");
-                array.add(cam);
-            }
-
-            root.add("cameras", array);
-
-            try (Writer writer = Files.newBufferedWriter(getFile(playerUuid))) {
-                new GsonBuilder().setPrettyPrinting().create().toJson(root, writer);
-            }
-
-            CameraMod.LOGGER.info("[StageCam] Cameras saved for " + playerUuid);
-        } catch (Exception e) {
-            CameraMod.LOGGER.error("[StageCam] Error saving cameras: " + e.getMessage());
+        try (Writer writer = new FileWriter(getFile(uuid, set).toFile())) {
+            new GsonBuilder().setPrettyPrinting().create().toJson(root, writer);
+        } catch (IOException e) {
+            CameraMod.LOGGER.error("Failed to save cameras: " + e.getMessage());
         }
     }
 
-    public static Map<Integer, CameraPoint> load(UUID playerUuid) {
-        Map<Integer, CameraPoint> cameras = new HashMap<>();
-        Path file = getFile(playerUuid);
+    public static Map<Integer, CameraPoint> loadSet(UUID uuid, int set) {
+        Map<Integer, CameraPoint> cams = new HashMap<>();
+        Path file = getFile(uuid, set);
+        if (!Files.exists(file)) return cams;
 
-        if (!Files.exists(file)) return cameras;
-
-        try (Reader reader = Files.newBufferedReader(file)) {
+        try (Reader reader = new FileReader(file.toFile())) {
             JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
-            JsonArray array = root.getAsJsonArray("cameras");
-
-            for (JsonElement element : array) {
-                JsonObject cam = element.getAsJsonObject();
-                int slot    = cam.get("slot").getAsInt();
-                double x    = cam.get("x").getAsDouble();
-                double y    = cam.get("y").getAsDouble();
-                double z    = cam.get("z").getAsDouble();
-                float yaw   = cam.get("yaw").getAsFloat();
-                float pitch = cam.get("pitch").getAsFloat();
-                // Backwards compatible - name is optional
-                String name = cam.has("name") ? cam.get("name").getAsString() : "";
-                cameras.put(slot, new CameraPoint(x, y, z, yaw, pitch, name));
+            for (Map.Entry<String, JsonElement> entry : root.entrySet()) {
+                int slot = Integer.parseInt(entry.getKey());
+                JsonObject obj = entry.getValue().getAsJsonObject();
+                double x     = obj.get("x").getAsDouble();
+                double y     = obj.get("y").getAsDouble();
+                double z     = obj.get("z").getAsDouble();
+                float yaw    = obj.get("yaw").getAsFloat();
+                float pitch  = obj.get("pitch").getAsFloat();
+                String name  = obj.has("name") ? obj.get("name").getAsString() : "";
+                cams.put(slot, new CameraPoint(x, y, z, yaw, pitch, name));
             }
-
-            CameraMod.LOGGER.info("[StageCam] Loaded " + cameras.size() + " camera(s) for " + playerUuid);
         } catch (Exception e) {
-            CameraMod.LOGGER.error("[StageCam] Error loading cameras: " + e.getMessage());
+            CameraMod.LOGGER.error("Failed to load cameras: " + e.getMessage());
         }
+        return cams;
+    }
 
-        return cameras;
+    // Load all sets for a player — finds all files matching <uuid>_set*.json
+    public static void loadAllSets(UUID uuid) {
+        Path dir = getDir();
+        String prefix = uuid + "_set";
+        try {
+            Files.list(dir).forEach(path -> {
+                String filename = path.getFileName().toString();
+                if (filename.startsWith(prefix) && filename.endsWith(".json")) {
+                    try {
+                        String setStr = filename.substring(prefix.length(), filename.length() - 5);
+                        int set = Integer.parseInt(setStr);
+                        Map<Integer, CameraPoint> cams = loadSet(uuid, set);
+                        CameraMod.getCamerasForSet(uuid, set).putAll(cams);
+                    } catch (NumberFormatException ignored) {}
+                }
+            });
+        } catch (IOException e) {
+            CameraMod.LOGGER.error("Failed to scan camera sets: " + e.getMessage());
+        }
+    }
+
+    // Legacy: save/load without set (set 1)
+    public static void save(UUID uuid, Map<Integer, CameraPoint> cams) {
+        saveSet(uuid, 1, cams);
+    }
+
+    public static Map<Integer, CameraPoint> load(UUID uuid) {
+        return loadSet(uuid, 1);
     }
 }

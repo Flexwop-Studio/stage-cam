@@ -24,8 +24,8 @@ public class CameraMarkerRenderer {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.player == null) return;
 
-        Map<Integer, CameraPoint> cams = CameraMod.playerCameras
-            .get(client.player.getUuid());
+Map<Integer, CameraPoint> cams = CameraMod.getCamerasForSet(
+    client.player.getUuid(), CameraModClient.activeSet);
         if (cams == null || cams.isEmpty()) return;
 
         MatrixStack matrices = context.matrixStack();

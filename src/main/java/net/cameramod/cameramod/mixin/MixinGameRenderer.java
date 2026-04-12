@@ -25,7 +25,6 @@ public class MixinGameRenderer {
     private void beforeRender(RenderTickCounter tickCounter, boolean tick, CallbackInfo ci) {
         if (client.options == null) return;
 
-        // Stop the camera feed when any screen is open EXCEPT the chat screen
         boolean screenOpen = client.currentScreen != null
             && !(client.currentScreen instanceof ChatScreen);
 
@@ -70,8 +69,11 @@ public class MixinGameRenderer {
     @Inject(method = "getFov", at = @At("RETURN"), cancellable = true)
     private void onGetFov(Camera camera, float tickDelta, boolean changingFov, CallbackInfoReturnable<Double> cir) {
         if (CameraModClient.renderingCameraPass) {
-            double baseFov = (double) client.options.getFov().getValue();
-            cir.setReturnValue(baseFov);
+            // Use zoom FOV if set, otherwise use base FOV (no sprint zoom)
+            double fov = CameraModClient.cameraFov >= 0
+                ? (double) CameraModClient.cameraFov
+                : (double) client.options.getFov().getValue();
+            cir.setReturnValue(fov);
         }
     }
 
