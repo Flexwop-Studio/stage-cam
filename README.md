@@ -1,6 +1,6 @@
 # StageCam
 
-A client-side Fabric mod for Minecraft 1.21.1 that adds a professional live camera system — perfect for streaming and content creation.
+A client-side Fabric mod for Minecraft 1.21.1–1.21.4 that adds a professional live camera system — perfect for streaming and content creation.
 
 A second window opens automatically when you load a world. Point OBS at it as a Virtual Camera and you're live.
 
@@ -8,11 +8,14 @@ A second window opens automatically when you load a world. Point OBS at it as a 
 
 ## Features
 
-- **Fixed Cameras** — Place up to 9 camera points anywhere with `/setcam <1-9>`
+- **Fixed Cameras** — Place up to 9 camera points per set anywhere with `/setcam <slot> <set> <n>`
+- **Camera Sets** — Unlimited sets of 9 cameras each, switch with Page Up / Page Down
 - **Live Second Window** — Resizable, native resolution, designed for OBS Virtual Camera
+- **Follow Mode** — Fixed camera smoothly rotates to always look at the player (Numpad /)
+- **Zoom** — Numpad + / - to zoom in and out in 2° FOV steps
 - **Follow Modes** — Handheld and Ego camera modes that follow the player
 - **Custom Names** — Name your cameras for easy management
-- **Camera Indicator** — HUD element showing the active camera or mode
+- **Camera Indicator** — HUD element showing active set, camera, follow mode and zoom
 - **Camera Markers** — Wireframe markers visible through walls in the main window
 - **Persistent** — Camera positions save automatically between sessions
 
@@ -25,6 +28,11 @@ A second window opens automatically when you load a world. Point OBS at it as a 
 | Numpad 1-9 | Switch to camera slot |
 | Numpad 0 | Turn off active camera |
 | Numpad , | Toggle Handheld → Ego → Off |
+| Numpad / | Toggle Follow Mode |
+| Numpad + | Zoom in |
+| Numpad - | Zoom out |
+| Page Up | Next camera set |
+| Page Down | Previous camera set |
 
 All keybinds are configurable in **Options → Controls → StageCam**.
 
@@ -34,20 +42,20 @@ All keybinds are configurable in **Options → Controls → StageCam**.
 
 | Command | Description |
 |---------|-------------|
-| `/setcam <1-9>` | Save current position as camera |
-| `/setcam <1-9> <name>` | Save with a custom name |
-| `/renamecam <1-9> <name>` | Rename an existing camera |
+| `/setcam <1-9> <set> <n>` | Save current position as camera |
+| `/renamecam <1-9> <n>` | Rename an existing camera |
 | `/cam <1-9>` | Switch to a camera |
 | `/delcam <1-9>` | Delete a camera |
-| `/listcams` | List all saved cameras |
+| `/listcams` | List cameras in current set |
+| `/listcams-s <set>` | List cameras in a specific set |
 
 ---
 
 ## Requirements
 
-- Minecraft 1.21.1
+- Minecraft 1.21.1–1.21.4
 - Fabric Loader 0.16.5+
-- Fabric API 0.102.0+1.21.1
+- Fabric API
 
 ---
 
@@ -60,8 +68,8 @@ All keybinds are configurable in **Options → Controls → StageCam**.
 ### Steps
 
 ```bash
-git clone https://github.com/yourusername/stagecam.git
-cd stagecam
+git clone https://github.com/Flexwop/stage-cam.git
+cd stage-cam
 ./gradlew build
 ```
 
@@ -72,6 +80,19 @@ To run in a development environment:
 ```bash
 ./gradlew runClient
 ```
+
+---
+
+## Branches
+
+The repository has two active branches, one per supported Minecraft version range:
+
+| Branch | Minecraft Version |
+|--------|------------------|
+| `1.21.1` | 1.21.1 |
+| `1.21.4` | 1.21.2, 1.21.3, 1.21.4 |
+
+When contributing, please make sure to apply your changes to both branches. Bug fixes and new features should first be committed to `1.21.1`, then cherry-picked into `1.21.4`.
 
 ---
 
@@ -88,8 +109,8 @@ src/main/java/net/cameramod/cameramod/
 ├── PlayerState.java                # Player state backup
 ├── SecondWindow.java               # Second GLFW window + framebuffer
 └── mixin/
-    ├── MixinCamera.java            # Override camera position
-    ├── MixinGameRenderer.java      # Dual render pass logic
+    ├── MixinCamera.java            # Override camera position + follow mode
+    ├── MixinGameRenderer.java      # Dual render pass logic + zoom
     ├── MixinCameraFollowMode.java  # Handheld/Ego follow modes
     ├── MixinInGameHud.java         # Hide HUD in camera pass
     ├── MixinWorldRenderer.java     # Hide block outline in camera pass
@@ -102,10 +123,10 @@ src/main/java/net/cameramod/cameramod/
 
 StageCam renders the game **twice per frame**:
 
-1. **Camera pass** — renders the world from the camera position (Third-Person) into a framebuffer, then blits it to the second window
+1. **Camera pass** — renders the world from the camera position into a framebuffer, then blits it to the second window
 2. **Main pass** — renders normally in First-Person for the main window
 
-Mixins are used to override Minecraft's camera position and hide HUD elements during the camera pass.
+Mixins are used to override the camera position, hide HUD elements, and apply zoom during the camera pass.
 
 ---
 
@@ -116,7 +137,7 @@ StageCam works with shader packs but some effects may cause artifacts:
 - **Bloom** — may bleed around the player model
 - **TAA** — may cause ghosting due to the dual render pass
 
-Disable Bloom and TAA in your shader settings for the best experience.
+Disable Bloom and TAA in your shader settings for the best experience. StageCam will automatically warn you on world join if Iris is detected.
 
 ---
 
@@ -124,7 +145,7 @@ Disable Bloom and TAA in your shader settings for the best experience.
 
 Pull requests are welcome! If you find a bug or have a feature request, open an issue on GitHub.
 
-Please follow the existing code style — no unnecessary dependencies, keep it simple.
+Please follow the existing code style and remember to apply changes to both branches.
 
 ---
 
