@@ -8,7 +8,7 @@ import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
-
+import net.minecraft.client.gl.ShaderProgramKeys;
 import java.util.Map;
 
 public class CameraMarkerRenderer {
@@ -43,7 +43,7 @@ Map<Integer, CameraPoint> cams = CameraMod.getCamerasForSet(
 
         RenderSystem.lineWidth(2.0f);
         RenderSystem.disableDepthTest(); // Visible through walls
-        RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
+        RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_LINES);
 
         Matrix4f matrix = matrices.peek().getPositionMatrix();
 
