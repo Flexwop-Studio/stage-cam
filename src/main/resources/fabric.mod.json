@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "id": "cameramod",
-  "version": "1.2.1 - 1.21.5",
-  "name": "CameraMod",
+  "version": "1.2.1 - 1.21.4",
+  "name": "StageCam",
   "description": "Place camera points and switch between them with numpad keys",
-  "authors": ["You"],
+  "authors": ["Flexwop"],
   "contact": {},
   "license": "MIT",
   "environment": "*",
