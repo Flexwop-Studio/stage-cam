@@ -1,3 +1,7 @@
+[Modrinth](https://modrinth.com/mod/stage-cam) | [Curseforge](https://www.curseforge.com/minecraft/mc-mods/stage-cam) | [GitHub](https://github.com/Flexwop-Studio/stage-cam) | [Wiki](https://github.com/Flexwop-Studio/stage-cam/wiki) | [Report Issues](https://github.com/Flexwop-Studio/stage-cam/issues)
+
+![StageCam Textcraft Logo](https://cdn.modrinth.com/data/cached_images/e54594d3841e6023646d3740a14b3aa5aa83a53c.png)
+
 # StageCam
 
 A client-side Fabric mod for Minecraft 1.21.1–1.21.4 that adds a professional live camera system — perfect for streaming and content creation.
