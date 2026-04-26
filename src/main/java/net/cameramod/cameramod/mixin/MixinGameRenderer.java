@@ -66,13 +66,13 @@ public class MixinGameRenderer {
         }
     }
 
+    // 1.21.4 returns Float not Double
     @Inject(method = "getFov", at = @At("RETURN"), cancellable = true)
-    private void onGetFov(Camera camera, float tickDelta, boolean changingFov, CallbackInfoReturnable<Double> cir) {
+    private void onGetFov(Camera camera, float tickDelta, boolean changingFov, CallbackInfoReturnable<Float> cir) {
         if (CameraModClient.renderingCameraPass) {
-            // Use zoom FOV if set, otherwise use base FOV (no sprint zoom)
-            double fov = CameraModClient.cameraFov >= 0
-                ? (double) CameraModClient.cameraFov
-                : (double) client.options.getFov().getValue();
+            float fov = CameraModClient.cameraFov >= 0
+                ? CameraModClient.cameraFov
+                : (float) client.options.getFov().getValue();
             cir.setReturnValue(fov);
         }
     }
