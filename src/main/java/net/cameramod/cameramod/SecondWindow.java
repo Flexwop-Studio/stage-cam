@@ -13,7 +13,6 @@ public class SecondWindow {
     private int framebufferTexture = -1;
     private int depthBuffer = -1;
 
-    // Dynamic size - starts at 854x480, resizes with window
     public int fbWidth = 854;
     public int fbHeight = 480;
 
@@ -22,22 +21,20 @@ public class SecondWindow {
     public void init() {
         GLFW.glfwDefaultWindowHints();
         GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_TRUE);
-        GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_TRUE); // Resizable!
+        GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_TRUE);
 
         long mainWindow = MinecraftClient.getInstance().getWindow().getHandle();
-        windowHandle = GLFW.glfwCreateWindow(fbWidth, fbHeight, "StageCam - Camera View", 0, mainWindow);
+        windowHandle = GLFW.glfwCreateWindow(fbWidth, fbHeight, "StageCam — Camera View", 0, mainWindow);
 
         if (windowHandle == 0) {
             CameraMod.LOGGER.error("Second window could not be created!");
             return;
         }
 
-        // Register resize callback
         resizeCallback = GLFWFramebufferSizeCallback.create((window, width, height) -> {
             if (width > 0 && height > 0) {
                 fbWidth = width;
                 fbHeight = height;
-                // Recreate framebuffer with new size
                 deleteFramebuffer();
                 initFramebuffer();
                 CameraMod.LOGGER.info("StageCam window resized to " + width + "x" + height);
@@ -49,7 +46,6 @@ public class SecondWindow {
     }
 
     public void initFramebuffer() {
-        // Use the actual Minecraft framebuffer size for best quality
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.getWindow() != null) {
             fbWidth = Math.max(fbWidth, client.getWindow().getFramebufferWidth());
@@ -79,17 +75,15 @@ public class SecondWindow {
     }
 
     private void deleteFramebuffer() {
-        if (framebuffer != -1) {
-            GL32.glDeleteFramebuffers(framebuffer);
-            framebuffer = -1;
-        }
-        if (framebufferTexture != -1) {
-            GL32.glDeleteTextures(framebufferTexture);
-            framebufferTexture = -1;
-        }
-        if (depthBuffer != -1) {
-            GL32.glDeleteRenderbuffers(depthBuffer);
-            depthBuffer = -1;
+        if (framebuffer != -1) { GL32.glDeleteFramebuffers(framebuffer); framebuffer = -1; }
+        if (framebufferTexture != -1) { GL32.glDeleteTextures(framebufferTexture); framebufferTexture = -1; }
+        if (depthBuffer != -1) { GL32.glDeleteRenderbuffers(depthBuffer); depthBuffer = -1; }
+    }
+
+    // Update the second window title bar
+    public void updateTitle(String label) {
+        if (windowHandle != -1 && windowHandle != 0) {
+            GLFW.glfwSetWindowTitle(windowHandle, "StageCam — " + label);
         }
     }
 
@@ -98,11 +92,9 @@ public class SecondWindow {
 
         long mainWindow = MinecraftClient.getInstance().getWindow().getHandle();
 
-        // Switch to second window context
         GLFW.glfwMakeContextCurrent(windowHandle);
         GL.createCapabilities();
 
-        // Get actual second window framebuffer size
         int[] winW = new int[1], winH = new int[1];
         GLFW.glfwGetFramebufferSize(windowHandle, winW, winH);
 
@@ -123,7 +115,6 @@ public class SecondWindow {
         GLFW.glfwSwapBuffers(windowHandle);
         GLFW.glfwPollEvents();
 
-        // Switch back to main window
         GLFW.glfwMakeContextCurrent(mainWindow);
         GL.createCapabilities();
     }
@@ -131,8 +122,6 @@ public class SecondWindow {
     public long getWindowHandle() { return windowHandle; }
     public int getFramebuffer() { return framebuffer; }
     public int getFramebufferTexture() { return framebufferTexture; }
-
-    // Used by MixinGameRenderer for blit source dimensions
     public int getFbWidth() { return fbWidth; }
     public int getFbHeight() { return fbHeight; }
 
@@ -142,14 +131,8 @@ public class SecondWindow {
     }
 
     public void close() {
-        if (resizeCallback != null) {
-            resizeCallback.free();
-            resizeCallback = null;
-        }
+        if (resizeCallback != null) { resizeCallback.free(); resizeCallback = null; }
         deleteFramebuffer();
-        if (windowHandle != -1) {
-            GLFW.glfwDestroyWindow(windowHandle);
-            windowHandle = -1;
-        }
+        if (windowHandle != -1) { GLFW.glfwDestroyWindow(windowHandle); windowHandle = -1; }
     }
 }
