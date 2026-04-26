@@ -9,6 +9,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.option.Perspective;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
@@ -34,21 +35,33 @@ public class CameraModClient implements ClientModInitializer {
 
     public static boolean handcamMode = false;
     public static boolean egoMode = false;
-    public static boolean followMode = false;  // Fixed cam looks at player
+    public static boolean followMode = false;
 
-    // Zoom
-    public static float cameraFov = -1f; // -1 = use default
+    public static float cameraFov = -1f;
     private static final float FOV_MIN = 10f;
     private static final float FOV_MAX = 110f;
     private static final float FOV_STEP = 2f;
 
-    // Camera sets
-    public static int activeSet = 1; // 1-based
+    public static int activeSet = 1;
 
     private static boolean irisWarningShown = false;
 
     public static boolean isCameraActive() {
         return activeCamPoint != null || handcamMode || egoMode;
+    }
+
+    // Play a subtle click sound when switching cameras
+    private static void playClickSound(MinecraftClient client) {
+        if (client.player != null) {
+            client.player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.4f, 1.2f);
+        }
+    }
+
+    // Update the second window title
+    private static void updateWindowTitle(String label) {
+        if (secondWindow != null) {
+            secondWindow.updateTitle(label);
+        }
     }
 
     public static void deactivateCamera(MinecraftClient client) {
@@ -61,6 +74,7 @@ public class CameraModClient implements ClientModInitializer {
         renderingCameraPass = false;
         blittedThisPass = false;
         cameraFov = -1f;
+        updateWindowTitle("Camera View");
         if (client != null && client.options != null) {
             client.options.setPerspective(
                 savedPerspective != null ? savedPerspective : Perspective.FIRST_PERSON
@@ -75,7 +89,6 @@ public class CameraModClient implements ClientModInitializer {
         CameraMarkerRenderer.register();
         CameraIndicatorRenderer.register();
 
-        // Numpad 0-9
         String[] keyNames = {"0","1","2","3","4","5","6","7","8","9"};
         int[] glfwKeys = {
             GLFW.GLFW_KEY_KP_0,
@@ -90,19 +103,16 @@ public class CameraModClient implements ClientModInitializer {
             ));
         }
 
-        // Numpad , = Toggle Handheld -> Ego -> Off
         handcamKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
             "key.cameramod.handcam",
             InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_KP_DECIMAL, "category.cameramod"
         ));
 
-        // Numpad / = Toggle Follow Mode
         followKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
             "key.cameramod.follow",
             InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_KP_DIVIDE, "category.cameramod"
         ));
 
-        // Numpad + / - = Zoom
         zoomInKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
             "key.cameramod.zoomin",
             InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_KP_ADD, "category.cameramod"
@@ -112,7 +122,6 @@ public class CameraModClient implements ClientModInitializer {
             InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_KP_SUBTRACT, "category.cameramod"
         ));
 
-        // Page Up / Page Down = Switch camera sets
         setNextKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
             "key.cameramod.setnext",
             InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_PAGE_UP, "category.cameramod"
@@ -140,6 +149,7 @@ public class CameraModClient implements ClientModInitializer {
             // Numpad 0 = turn everything off
             if (camKeys[0].wasPressed()) {
                 deactivateCamera(client);
+                playClickSound(client);
             }
 
             // Numpad 1-9 = fixed camera
@@ -149,6 +159,7 @@ public class CameraModClient implements ClientModInitializer {
                     egoMode = false;
                     followMode = false;
                     cameraFov = -1f;
+                    playClickSound(client);
                     client.player.networkHandler.sendChatCommand("cam " + i + " " + activeSet);
                 }
             }
@@ -163,20 +174,26 @@ public class CameraModClient implements ClientModInitializer {
                     activeCamSlot = 0;
                     activeCamName = "";
                     cameraFov = -1f;
+                    playClickSound(client);
+                    updateWindowTitle("Handheld");
                 } else if (handcamMode) {
                     handcamMode = false;
                     egoMode = true;
                     followMode = false;
                     activeCamPoint = null;
                     cameraFov = -1f;
+                    playClickSound(client);
+                    updateWindowTitle("Ego");
                 } else {
                     deactivateCamera(client);
+                    playClickSound(client);
                 }
             }
 
-            // Numpad / = Toggle Follow Mode (only when fixed cam active)
+            // Numpad / = Toggle Follow Mode
             if (followKey.wasPressed() && activeCamPoint != null) {
                 followMode = !followMode;
+                playClickSound(client);
                 client.player.sendMessage(
                     Text.literal("§e[StageCam] §fFollow mode: " + (followMode ? "§aON" : "§cOFF")),
                     true
@@ -201,6 +218,8 @@ public class CameraModClient implements ClientModInitializer {
                 activeCamName = "";
                 followMode = false;
                 cameraFov = -1f;
+                playClickSound(client);
+                updateWindowTitle("Set " + activeSet);
                 client.player.sendMessage(
                     Text.literal("§e[StageCam] §fCamera Set: §a" + activeSet),
                     true
@@ -214,6 +233,8 @@ public class CameraModClient implements ClientModInitializer {
                     activeCamName = "";
                     followMode = false;
                     cameraFov = -1f;
+                    playClickSound(client);
+                    updateWindowTitle("Set " + activeSet);
                     client.player.sendMessage(
                         Text.literal("§e[StageCam] §fCamera Set: §a" + activeSet),
                         true
@@ -242,6 +263,18 @@ public class CameraModClient implements ClientModInitializer {
                     handcamMode = false;
                     egoMode = false;
                     followMode = false;
+
+                    // Update window title with camera name
+                    String title = activeCamName.isEmpty()
+                        ? "S" + activeSet + " · Camera " + activeCamSlot
+                        : "S" + activeSet + " · " + activeCamName;
+                    updateWindowTitle(title);
+
+                    // Play click sound
+                    MinecraftClient mc = MinecraftClient.getInstance();
+                    if (mc.player != null) {
+                        mc.player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.4f, 1.2f);
+                    }
                 } catch (Exception e) {
                     CameraMod.LOGGER.error("Error parsing CAMDATA: " + e.getMessage());
                 }
