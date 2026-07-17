@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.cameramod.cameramod.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "MixinCamera",
+    "MixinGameRenderer",
+    "MixinInGameHud",
+    "MixinCameraFollowMode",
+    "MixinWorldRenderer"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
