@@ -8,7 +8,7 @@ import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
-// 1.20.1 port
+
 import java.util.Map;
 
 public class CameraMarkerRenderer {
