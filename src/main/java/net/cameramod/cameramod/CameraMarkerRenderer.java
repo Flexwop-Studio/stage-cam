@@ -76,8 +76,8 @@ public class CameraMarkerRenderer {
         float dy = y2 - y1;
         float dz = z2 - z1;
         float len = (float) Math.sqrt(dx*dx + dy*dy + dz*dz);
-        buffer.vertex(matrix, x1, y1, z1).color(r, g, b, 1f).normal(dx/len, dy/len, dz/len);
-        buffer.vertex(matrix, x2, y2, z2).color(r, g, b, 1f).normal(dx/len, dy/len, dz/len);
+        buffer.vertex(matrix, x1, y1, z1).color(r, g, b, 1f).normal(dx/len, dy/len, dz/len).next();
+        buffer.vertex(matrix, x2, y2, z2).color(r, g, b, 1f).normal(dx/len, dy/len, dz/len).next();
     }
 
     private static void drawBox(BufferBuilder buffer, Matrix4f matrix,
